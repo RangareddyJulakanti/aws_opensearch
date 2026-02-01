@@ -35,6 +35,58 @@ flowchart TD
     style S3 fill:#388e3c,stroke:#333,stroke-width:2px,color:white
 ```
 
+### 🔄 S3 Backup Workflow (Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User/EventBridge
+    participant L as ⚡ AWS Lambda
+    participant A as 🔍 OpenSearch (AOSS)
+    participant S as 🪣 S3 Bucket
+
+    U->>L: Trigger Export (JSON Event)
+    activate L
+    L->>A: 1. Request Data (Scroll/SearchAfter)
+    activate A
+    A-->>L: Return Documents (Batch 1)
+    deactivate A
+    L->>L: Write to /tmp (NDJSON)
+    
+    loop Pagination
+        L->>A: Request Next Batch (Sort Key)
+        A-->>L: Return Documents
+        L->>L: Append to /tmp
+    end
+    
+    L->>S: 2. Upload File (PutObject)
+    activate S
+    S-->>L: Success (200 OK)
+    deactivate S
+    
+    L-->>U: Return Success Report
+    deactivate L
+```
+
+### 🧭 User Flow (Streamlit)
+
+```mermaid
+graph LR
+    User((👤 User)) --> Start[Open App]
+    Start --> Dashboard{View Dashboard}
+    
+    Dashboard -->|Check Status| Health[🟢 Cluster Health]
+    Dashboard -->|Manage Indexes| Create[✨ Create New Index]
+    
+    Start --> Entry[📝 Data Entry]
+    Entry -->|Submit Form| Insert[POST Document]
+    Insert -->|Indexing| AOSS[("🔍 OpenSearch")]
+    
+    Start --> Search[🔎 Search Explorer]
+    Search -->|Type Query| Query[GET /_search]
+    Query -->|Fetch Results| AOSS
+    AOSS -->|Return Hits| Display[📋 View Results Cards]
+```
+
 ---
 
 ## 📦 Components
