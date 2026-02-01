@@ -166,6 +166,36 @@ Test the Lambda logic locally to backup data to S3.
 python lambda_function.py inventory my-backup-bucket
 ```
 
+
+### 4. ☁️ Deploy to AWS Lambda
+To deploy this as a real Lambda function:
+
+**1. Create Deployment Package (Windows Powershell):**
+```powershell
+# Create a temporary folder
+mkdir package
+# Install dependencies into it
+pip install opensearch-py requests-aws4auth -t package/
+# Copy script file
+copy lambda_function.py package/
+# Zip it
+cd package
+Compress-Archive -Path * -DestinationPath ..\opensearch-export.zip
+cd ..
+```
+
+**2. Create Function (AWS CLI):**
+```bash
+aws lambda create-function ^
+    --function-name OpenSearchExport ^
+    --runtime python3.9 ^
+    --role arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_LAMBDA_ROLE ^
+    --handler lambda_function.lambda_handler ^
+    --zip-file fileb://opensearch-export.zip ^
+    --timeout 900 ^
+    --environment Variables="{OPENSEARCH_URL=https://your-endpoint.us-east-1.aoss.amazonaws.com,OUTPUT_BUCKET=your-bucket-name}"
+```
+
 ---
 
 ## ⚠️ Important Notes
