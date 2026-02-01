@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aws_opensearch"
+version = "0.1.0"
+description = "A module for interacting with Amazon OpenSearch"
+dependencies = [
+    "opensearch-py",
+    "requests-aws4auth",
+    "boto3",
+    "python-dotenv",
+    "streamlit",
+    "pandas"
+]
+
+[project.scripts]
+opensearch-cli = "aws_opensearch.app:main"
