@@ -23,10 +23,11 @@ flowchart TD
     end
 
     %% Connections
+    %% Connections
     UI <-->|Read/Write| AOSS
     CLI <-->|Read/Write| AOSS
-    Downloader <--|Stream Data| AOSS
-    Lambda <--|Stream Data| AOSS
+    AOSS -->|Stream Data| Downloader
+    AOSS -->|Stream Data| Lambda
     Lambda -->|Export NDJSON| S3
     
     %% Styles
