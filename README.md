@@ -196,6 +196,29 @@ aws lambda create-function ^
     --environment Variables="{OPENSEARCH_URL=https://your-endpoint.us-east-1.aoss.amazonaws.com,OUTPUT_BUCKET=your-bucket-name}"
 ```
 
+### 5. 🔐 Required AWS Permissions (Crucial)
+
+For the Lambda function to work, you must configure **both** IAM policies and OpenSearch internal policies.
+
+#### A. IAM Execution Role Permissions
+The Lambda's IAM Role (e.g., `OpenSearchExportRole`) needs these permissions:
+1.  **S3 Access**: `s3:PutObject` on your target bucket.
+2.  **OpenSearch Access**: `aoss:APIAccessAll` (for Serverless) or `es:ESHttp*` (for Provisioned).
+3.  **Basic Execution**: `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents`.
+
+#### B. OpenSearch Data Access Policy (The Missing Link)
+Even with IAM permissions, **OpenSearch Serverless (AOSS)** rejects requests unless the Principal is explicitly allowed in its Data Access Policy.
+
+1.  Go to **AWS Console** > **Amazon OpenSearch Service** > **Serverless** > **Collections**.
+2.  Select your collection.
+3.  Scroll to **Data access policies**.
+4.  Edit the policy to **Add a rule**:
+    -   **Principal**: Paste your Lambda Role ARN (e.g., `arn:aws:iam::123456789:role/OpenSearchExportRole`).
+    -   **Grant**: Select all permissions (or at least `Read` permissions for indices).
+
+> [!WARNING]
+> If you skip Step B, the Lambda function will fail with `403 Forbidden` errors, even if it has full AdministratorAccess in IAM.
+
 ---
 
 ## ⚠️ Important Notes
